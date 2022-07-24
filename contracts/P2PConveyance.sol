@@ -154,4 +154,8 @@ contract P2PConveyance {
     function getCounter() public view returns (uint256) {
         return counter;
     }
+
+    function getOrderHasBeenDelivered(uint256 id) public view returns (bool) {
+        return orders[id].hasBeenDelivered;
+    }
 }
