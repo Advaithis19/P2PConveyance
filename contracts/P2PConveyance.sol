@@ -44,23 +44,21 @@ contract P2PConveyance {
         bool hasBeenDelivered;
     }
 
-    event logOrderStatusChanged(
+    event orderStatusChanged(
         uint256 id,
-        Item[] items,
-        Restaurant restaurant,
-        Customer customer,
-        DeliveryAgent deliveryAgent,
-        uint256 restPrice,
-        uint256 delPrice,
+        string restaurantName,
+        string customerName,
+        string deliveryAgentName,
         bool hasBeenDelivered
     );
 
     //find utility of this
     mapping(uint256 => OrderInfo) private orders;
-    uint256[] private orderIds;
+    // uint256[] private orderIds;
 
     mapping(address => uint256) private deliveryAgentOwedBalance;
 
+    // add more require checks with orderIds array (check presence before accessing)
     function confirmOrderSubmission(
         Item[] memory items,
         Restaurant memory restaurant,
@@ -70,7 +68,7 @@ contract P2PConveyance {
         uint256 delPrice,
         address _restaurant,
         address _deliveryAgent
-    ) public payable {
+    ) public payable returns (uint256) {
         require(
             (restPrice + delPrice) == msg.value,
             "You must pay the exact amount required for order completion!"
@@ -90,7 +88,7 @@ contract P2PConveyance {
         newOrder.delPrice = delPrice;
         newOrder.hasBeenDelivered = false;
         newOrder.id = counter;
-        orderIds.push(counter);
+        // orderIds.push(counter);
 
         //possible error is that restPrice and delPrice are not in the proper format for payment
         payable(_restaurant).transfer(restPrice);
@@ -98,17 +96,18 @@ contract P2PConveyance {
         deliveryAgentOwedBalance[_deliveryAgent] += delPrice;
         //for the above we need to add facility to transfer new ERC20 token
 
-        emit logOrderStatusChanged(
+        // event: might have to destructure the attributes below for the moralis database to understand (try it first)
+        // add indexing for restaurant, customer and delivery agent
+        emit orderStatusChanged(
             counter,
-            items,
-            restaurant,
-            customer,
-            deliveryAgent,
-            restPrice,
-            delPrice,
+            newOrder.restaurant.name,
+            newOrder.customer.name,
+            newOrder.deliveryAgent.name,
             false
         );
         counter++;
+
+        return (counter - 1);
     }
 
     function confirmOrderDelivery(uint256 id) public payable {
@@ -119,19 +118,21 @@ contract P2PConveyance {
 
         orders[id].hasBeenDelivered = true;
         uint256 amount = deliveryAgentOwedBalance[msg.sender];
-        payable(msg.sender).transfer(amount);
-        deliveryAgentOwedBalance[msg.sender] = 0;
+        payable(msg.sender).transfer(orders[id].delPrice);
+        amount -= orders[id].delPrice;
+        deliveryAgentOwedBalance[msg.sender] = amount;
 
-        emit logOrderStatusChanged(
+        // event: might have to destructure the attributes below for the moralis database to understand (try it first)
+        // add indexing for restaurant, customer and delivery agent
+        emit orderStatusChanged(
             id,
-            orders[id].items,
-            orders[id].restaurant,
-            orders[id].customer,
-            orders[id].deliveryAgent,
-            orders[id].restPrice,
-            orders[id].delPrice,
+            orders[id].restaurant.name,
+            orders[id].customer.name,
+            orders[id].deliveryAgent.name,
             true
         );
+
+        // add functionality to delete the order created, to not make it persist (costly)
     }
 
     function getOrder(uint256 id) public view returns (OrderInfo memory) {
