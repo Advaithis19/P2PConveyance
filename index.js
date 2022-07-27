@@ -12,6 +12,11 @@ const app = express();
 var jsonParser = bodyParser.json();
 
 // GET method route
+app.get("/", (req, res) => {
+  res.send("Hi! You are at the index route...");
+});
+
+// GET method route
 app.get("/api/orders/:id/", setup, getOrder, (req, res) => {
   res.json({ orders: req.data });
 });
