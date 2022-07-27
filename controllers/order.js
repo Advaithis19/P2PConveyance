@@ -3,8 +3,12 @@ import ethers from "ethers";
 import "dotenv/config";
 // import fs from "fs";
 import contract from "../contracts/P2PConveyance.json" assert { type: "json" };
+// import Moralis from "moralis/dist/moralis.js";
+import axios from "axios";
 
 let p2pConveyanceContract;
+
+// constants from .env
 const RINKEBY_RPC_URL = process.env.RINKEBY_RPC_URL;
 // const ETHERSCAN_ABI_FETCH_URL = process.env.ETHERSCAN_ABI_FETCH_URL;
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
@@ -12,6 +16,10 @@ const RESTAURANT_ADDRESS = process.env.RESTAURANT_ADDRESS;
 const DELIVERY_AGENT_ADDRESS = process.env.DELIVERY_AGENT_ADDRESS;
 const CUSTOMER_PRIVATE_KEY = process.env.CUSTOMER_PRIVATE_KEY;
 const DELIVERY_AGENT_PRIVATE_KEY = process.env.DELIVERY_AGENT_PRIVATE_KEY;
+
+// const serverUrl = process.env.MORALIS_SERVER_URL;
+// const appId = process.env.MORALIS_APP_ID;
+// const masterKey = process.env.MORALIS_MASTER_KEY;
 
 const confirmSubmit = async (req, res, next) => {
   try {
@@ -46,6 +54,51 @@ const confirmDelivery = async (req, res, next) => {
     next();
   } catch (err) {
     console.log(err.message);
+    next(err);
+  }
+};
+
+const getOrdersList = async (req, res, next) => {
+  try {
+    let deliveredStatus = req.query.status.toString() == "live" ? false : true;
+    let restName = req.query.restName;
+    const endpoint =
+      "https://api.studio.thegraph.com/query/31820/p2pconveyance/0.1";
+
+    console.log("deliveredStatus", deliveredStatus);
+    console.log("req.query.restName", restName);
+
+    const graphqlQuery = {
+      operationName: "orderStatusChangeds",
+      query: `query {
+                orderStatusChangeds(
+                  where:{
+    	              restaurantName: "${restName}",
+                    hasBeenDelivered: ${deliveredStatus}
+  	              } 
+                first: 5) {
+                  tokenId
+                  restaurantName
+                  customerName
+                  deliveryAgentName
+                  hasBeenDelivered
+                }
+              }`,
+      variables: {},
+    };
+
+    const response = await axios({
+      url: endpoint,
+      method: "post",
+      data: graphqlQuery,
+    });
+
+    console.log(response.data.data.orderStatusChangeds);
+    req.data = response.data.data.orderStatusChangeds;
+
+    next();
+  } catch (err) {
+    console.log(err);
     next(err);
   }
 };
@@ -132,4 +185,4 @@ const setup = async (req, res, next) => {
   next();
 };
 
-export { confirmSubmit, confirmDelivery, getOrder, setup };
+export { confirmSubmit, confirmDelivery, getOrdersList, getOrder, setup };
