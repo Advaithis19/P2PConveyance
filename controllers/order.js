@@ -1,25 +1,18 @@
-// import fetch from "node-fetch";
 import ethers from "ethers";
 import "dotenv/config";
-// import fs from "fs";
 import contract from "../contracts/P2PConveyance.json" assert { type: "json" };
-// import Moralis from "moralis/dist/moralis.js";
 import axios from "axios";
 
 let p2pConveyanceContract;
 
 // constants from .env
 const RINKEBY_RPC_URL = process.env.RINKEBY_RPC_URL;
-// const ETHERSCAN_ABI_FETCH_URL = process.env.ETHERSCAN_ABI_FETCH_URL;
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 const RESTAURANT_ADDRESS = process.env.RESTAURANT_ADDRESS;
 const DELIVERY_AGENT_ADDRESS = process.env.DELIVERY_AGENT_ADDRESS;
 const CUSTOMER_PRIVATE_KEY = process.env.CUSTOMER_PRIVATE_KEY;
 const DELIVERY_AGENT_PRIVATE_KEY = process.env.DELIVERY_AGENT_PRIVATE_KEY;
-
-// const serverUrl = process.env.MORALIS_SERVER_URL;
-// const appId = process.env.MORALIS_APP_ID;
-// const masterKey = process.env.MORALIS_MASTER_KEY;
+const SUBGRAPH_URL = process.env.SUBGRAPH_URL;
 
 const confirmSubmit = async (req, res, next) => {
   try {
@@ -62,8 +55,7 @@ const getOrdersList = async (req, res, next) => {
   try {
     let deliveredStatus = req.query.status.toString() == "live" ? false : true;
     let restName = req.query.restName;
-    const endpoint =
-      "https://api.studio.thegraph.com/query/31820/p2pconveyance/0.1";
+    const endpoint = SUBGRAPH_URL;
 
     console.log("deliveredStatus", deliveredStatus);
     console.log("req.query.restName", restName);
@@ -154,16 +146,6 @@ const getOrder = async (req, res, next) => {
 };
 
 const setup = async (req, res, next) => {
-  // const response = await fetch(ETHERSCAN_ABI_FETCH_URL);
-  // const data = await response.json();
-
-  // let abi = data.result;
-  // console.log("abi", abi);
-
-  // var jsonFile = "../P2PConveyance.json";
-  // var parsed = JSON.parse(fs.readFileSync(jsonFile));
-  // var abi = parsed.abi;
-
   const node = RINKEBY_RPC_URL;
   const provider = new ethers.providers.WebSocketProvider(node);
 
