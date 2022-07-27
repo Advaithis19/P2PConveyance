@@ -1,0 +1,8 @@
+type orderStatusChanged @entity {
+  id: ID!
+  id: BigInt! # uint256
+  restaurantName: String! # string
+  customerName: String! # string
+  deliveryAgentName: String! # string
+  hasBeenDelivered: Boolean! # bool
+}
