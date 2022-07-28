@@ -31,7 +31,10 @@ const confirmSubmit = async (req, res, next) => {
         { value: sendValue }
       );
     await orderSubmissionResponse.wait();
-    req.data = orderSubmissionResponse.id;
+    let counter = await p2pConveyanceContract.getCounter();
+    let id = counter.sub(1);
+    req.data = id.toString();
+
     next();
   } catch (err) {
     console.log(err);
@@ -46,7 +49,7 @@ const confirmDelivery = async (req, res, next) => {
     await orderDeliveryResponse.wait();
     next();
   } catch (err) {
-    console.log(err.message);
+    console.log(err);
     next(err);
   }
 };
@@ -141,7 +144,7 @@ const getOrder = async (req, res, next) => {
     next();
   } catch (err) {
     console.log(err);
-    next(error);
+    next(err);
   }
 };
 
