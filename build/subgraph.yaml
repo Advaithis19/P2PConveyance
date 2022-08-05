@@ -1,6 +1,6 @@
 specVersion: 0.0.4
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 dataSources:
   - kind: ethereum
     name: P2PConveyance
@@ -17,8 +17,8 @@ dataSources:
         - orderStatusChanged
       abis:
         - name: P2PConveyance
-          file: ./abis/P2PConveyance.json
+          file: P2PConveyance\abis\P2PConveyance.json
       eventHandlers:
         - event: orderStatusChanged(uint256,string,string,string,bool)
           handler: handleorderStatusChanged
-      file: ./src/p-2-p-conveyance.ts
+      file: P2PConveyance\P2PConveyance.wasm
