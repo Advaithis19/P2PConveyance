@@ -1,0 +1,24 @@
+specVersion: 0.0.4
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: P2PConveyance
+    network: rinkeby
+    source:
+      address: "0x2d71cB7d605B979340eaD01479078Cd81106ea27"
+      abi: P2PConveyance
+      startBlock: 11093541
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - orderStatusChanged
+      abis:
+        - name: P2PConveyance
+          file: P2PConveyance\abis\P2PConveyance.json
+      eventHandlers:
+        - event: orderStatusChanged(uint256,string,string,string,bool)
+          handler: handleorderStatusChanged
+      file: P2PConveyance\P2PConveyance.wasm
